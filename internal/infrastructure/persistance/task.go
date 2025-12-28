@@ -66,13 +66,19 @@ func (r *TaskRepository) Update(ctx context.Context, task *entity.Task) error {
 	return nil
 }
 
+// сделал проверку контекста только здесь потому что остальные методы работают мнгновенно или почти мнгновенно
 func (r *TaskRepository) GetAll(ctx context.Context) ([]entity.Task, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	tasks := make([]entity.Task, 0, len(r.data))
 	for _, v := range r.data {
-		tasks = append(tasks, v)
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		default:
+			tasks = append(tasks, v)
+		}
 	}
 	return tasks, nil
 }
