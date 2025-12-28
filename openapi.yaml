@@ -1,0 +1,207 @@
+openapi: 3.0.3
+info:
+  title: Todo API
+  description: API для управления списком задач (ecom_test)
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Локальный сервер разработки
+
+paths:
+  /todos:
+    get:
+      summary: Получить список всех задач
+      operationId: getAllTasks
+      responses:
+        '200':
+          description: Список задач успешно получен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetAllTasksResponse'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    post:
+      summary: Создать новую задачу
+      operationId: createTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTaskRequest'
+      responses:
+        '201':
+          description: Задача успешно создана
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTaskResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /todos/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Идентификатор задачи
+        schema:
+          type: integer
+          format: int64
+
+    get:
+      summary: Получить задачу по ID
+      operationId: getTaskById
+      responses:
+        '200':
+          description: Данные задачи
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTaskResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    put:
+      summary: Обновить задачу
+      operationId: updateTask
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTaskRequest'
+      responses:
+        '200':
+          description: Задача успешно обновлена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateTaskResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+    delete:
+      summary: Удалить задачу
+      operationId: deleteTask
+      responses:
+        '200':
+          description: Задача успешно удалена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteTaskResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  schemas:
+    CreateTaskRequest:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          example: "Купить продукты"
+        description:
+          type: string
+          example: "Молоко, хлеб, яйца"
+
+    UpdateTaskRequest:
+      type: object
+      required: [title, is_completed]
+      properties:
+        title:
+          type: string
+          example: "Купить продукты"
+        description:
+          type: string
+          example: "Молоко, хлеб, яйца"
+        is_completed:
+          type: boolean
+          example: true
+
+    CreateTaskResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+
+    GetTaskResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        is_completed:
+          type: boolean
+
+    GetAllTasksResponse:
+      type: object
+      properties:
+        tasks:
+          type: array
+          items:
+            $ref: '#/components/schemas/TaskListItem'
+
+    TaskListItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        is_completed:
+          type: boolean
+
+    UpdateTaskResponse:
+      $ref: '#/components/schemas/GetTaskResponse'
+
+    DeleteTaskResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+
+  responses:
+    BadRequest:
+      description: Некорректный запрос
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
